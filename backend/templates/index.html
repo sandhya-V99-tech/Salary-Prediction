@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title> Salary Prediction </title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --bg:      #080d14;
+      --bg1:     #0d1520;
+      --bg2:     #111b2a;
+      --bg3:     #172236;
+      --border:  rgba(255,255,255,.07);
+      --border2: rgba(255,255,255,.14);
+      --blue:    #3b82f6;
+      --blue-d:  #1d4ed8;
+      --green:   #10b981;
+      --amber:   #f59e0b;
+      --pink:    #ec4899;
+      --text:    #e2e8f0;
+      --text2:   #94a3b8;
+      --text3:   #475569;
+      --fh: 'Syne', sans-serif;
+      --fb: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--fb); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ══ HEADER ══ */
+    .header {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .header-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand { display: flex; align-items: center; gap: 11px; }
+    .brand-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--blue-d), var(--blue));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-icon svg { width: 16px; height: 16px; fill: #fff; }
+    .brand-name { font-family: var(--fh); font-size: 15px; font-weight: 800; color: var(--text); }
+    .brand-sep { width: 1px; height: 16px; background: var(--border2); }
+    .brand-sub { font-size: 11px; color: var(--text3); letter-spacing: .3px; }
+
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      padding: 4px 11px; border-radius: 20px;
+      border: 1px solid rgba(16,185,129,.3);
+      background: rgba(16,185,129,.07);
+      font-size: 11px; font-weight: 500; color: var(--green);
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .dot.pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.35} }
+
+    /* ══ TABS ══ */
+    .tabs {
+      display: flex; align-items: flex-end;
+      padding: 0 32px;
+      gap: 2px;
+      height: 44px;
+    }
+
+    .tab {
+      display: flex; align-items: center; gap: 7px;
+      padding: 0 18px;
+      height: 100%;
+      font-family: var(--fb);
+      font-size: 13px; font-weight: 400;
+      color: var(--text3);
+      background: none; border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+      white-space: nowrap;
+    }
+    .tab svg { width: 14px; height: 14px; fill: currentColor; opacity: .7; flex-shrink: 0; }
+    .tab:hover { color: var(--text2); background: rgba(255,255,255,.03); }
+    .tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 500; }
+    .tab.active svg { opacity: 1; }
+
+    /* ══ CONTENT ══ */
+    .content { max-width: 1200px; margin: 0 auto; padding: 36px 32px; }
+
+    .page { display: none; animation: fadeUp .22s ease; }
+    .page.active { display: block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ══ HOME ══ */
+    .hero { padding: 56px 0 44px; border-bottom: 1px solid var(--border); margin-bottom: 48px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 20px;
+      border: 1px solid rgba(59,130,246,.3); background: rgba(59,130,246,.07);
+      font-size: 11px; font-weight: 500; color: var(--blue); margin-bottom: 22px;
+    }
+    .hero h1 { font-family: var(--fh); font-size: 56px; font-weight: 800; line-height: 1.07; color: var(--text); max-width: 660px; margin-bottom: 18px; }
+    .hero h1 em { font-style: normal; color: var(--blue); }
+    .hero p { font-size: 16px; color: var(--text2); line-height: 1.75; max-width: 520px; margin-bottom: 32px; font-weight: 300; }
+    .hero-btns { display: flex; gap: 10px; }
+    .btn-p { padding: 11px 24px; border-radius: 8px; background: var(--blue); color: #fff; border: none; cursor: pointer; font-family: var(--fb); font-size: 13.5px; font-weight: 500; transition: opacity .15s, transform .1s; }
+    .btn-p:hover { opacity: .86; transform: translateY(-1px); }
+    .btn-g { padding: 11px 24px; border-radius: 8px; background: transparent; color: var(--text2); border: 1px solid var(--border2); cursor: pointer; font-family: var(--fb); font-size: 13.5px; font-weight: 400; transition: background .15s, color .15s; }
+    .btn-g:hover { background: var(--bg2); color: var(--text); }
+
+    .home-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 40px; }
+    .hcard { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 24px; transition: border-color .2s, transform .2s; }
+    .hcard:hover { border-color: var(--border2); transform: translateY(-3px); }
+    .hcard-icon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+    .hcard-icon svg { width: 18px; height: 18px; }
+    .ic-blue  { background: rgba(59,130,246,.15); } .ic-blue  svg { fill: var(--blue); }
+    .ic-green { background: rgba(16,185,129,.15); } .ic-green svg { fill: var(--green); }
+    .ic-amber { background: rgba(245,158,11,.15);  } .ic-amber svg { fill: var(--amber); }
+    .hcard h3 { font-family: var(--fh); font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .hcard p  { font-size: 13px; color: var(--text2); line-height: 1.65; font-weight: 300; }
+
+    .home-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+    .hs { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+    .hs-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 6px; }
+    .hs-val { font-family: var(--fh); font-size: 24px; font-weight: 800; color: var(--blue); }
+    .hs-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+    /* ══ DASHBOARD ══ */
+    .dash-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: border-color .2s, transform .2s; }
+    .stat-card:hover { border-color: rgba(59,130,246,.35); transform: translateY(-2px); }
+    .sc-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; margin-bottom: 7px; }
+    .sc-val { font-family: var(--fh); font-size: 26px; font-weight: 800; color: var(--blue); }
+    .sc-sub { font-size: 10px; color: var(--text3); margin-top: 4px; }
+
+    .charts-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+    .chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .chart-card h3 { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .7px; padding-left: 10px; border-left: 2px solid var(--blue); border-radius: 0; margin-bottom: 18px; }
+    .chart-wrap { position: relative; height: 220px; }
+
+    /* ══ PREDICTOR ══ */
+    .pred-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .pred-banner { padding: 26px 30px; background: linear-gradient(135deg, rgba(29,78,216,.45), rgba(6,182,212,.1)); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .pred-banner h2 { font-family: var(--fh); font-size: 18px; font-weight: 800; color: var(--text); }
+    .pred-banner p  { font-size: 12px; color: var(--text2); margin-top: 3px; font-weight: 300; }
+    .model-pill { padding: 5px 13px; border-radius: 20px; background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.3); font-size: 11px; font-weight: 500; color: var(--blue); white-space: nowrap; }
+    .pred-body { padding: 26px 30px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(168px,1fr)); gap: 13px; margin-bottom: 18px; }
+    .fg { display: flex; flex-direction: column; gap: 5px; }
+    .fg label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; font-weight: 500; }
+    .fg select, .fg input { background: var(--bg3); border: 1px solid var(--border2); border-radius: 8px; color: var(--text); padding: 8px 11px; font-size: 13px; font-family: var(--fb); height: 36px; transition: border-color .2s; }
+    .fg select:focus, .fg input:focus { outline: none; border-color: var(--blue); }
+
+    .skills-section { grid-column: 1/-1; }
+    .skills-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 9px; font-weight: 500; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip { display: flex; align-items: center; gap: 6px; padding: 5px 13px; border-radius: 20px; border: 1px solid var(--border2); background: var(--bg3); cursor: pointer; transition: all .15s; font-size: 12px; color: var(--text2); user-select: none; }
+    .chip input { display: none; }
+    .chip .cdot { width: 5px; height: 5px; border-radius: 50%; background: var(--border2); transition: background .15s; }
+    .chip.on { background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.45); color: #93c5fd; }
+    .chip.on .cdot { background: var(--blue); }
+
+    .pred-footer { padding: 18px 30px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .predict-btn { display: flex; align-items: center; gap: 7px; padding: 10px 24px; border-radius: 8px; background: var(--blue); color: #fff; border: none; cursor: pointer; font-family: var(--fb); font-size: 13.5px; font-weight: 500; transition: opacity .15s, transform .1s; }
+    .predict-btn:hover { opacity: .87; transform: translateY(-1px); }
+    .predict-btn:active { transform: scale(.98); }
+    .predict-btn svg { width: 15px; height: 15px; fill: #fff; }
+
+    .result-pill { display: none; flex-direction: column; gap: 1px; padding: 10px 18px; border-radius: 10px; background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.3); }
+    .r-lbl { font-size: 10px; color: #6ee7b7; text-transform: uppercase; letter-spacing: .5px; }
+    .r-val { font-family: var(--fh); font-size: 20px; font-weight: 800; color: var(--green); }
+    .r-sub { font-size: 11px; color: #6ee7b7; }
+    .err-pill { display: none; padding: 10px 14px; border-radius: 8px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); font-size: 13px; color: #fca5a5; }
+    .loader-txt { display: none; font-size: 12px; color: var(--text3); }
+
+    /* ══ ABOUT ══ */
+    .about-intro { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 28px 30px; margin-bottom: 20px; }
+    .about-intro h2 { font-family: var(--fh); font-size: 20px; font-weight: 800; margin-bottom: 14px; }
+    .about-intro p { font-size: 14px; color: var(--text2); line-height: 1.8; font-weight: 300; margin-bottom: 10px; }
+    .tech-pills { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+    .tpill { padding: 4px 11px; border-radius: 6px; font-size: 11px; font-weight: 500; border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+    .acard { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+    .acard h3 { font-family: var(--fh); font-size: 13px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+    .acard h3 svg { width: 15px; height: 15px; }
+    .acard ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .acard ul li { font-size: 13px; color: var(--text2); display: flex; gap: 9px; line-height: 1.5; font-weight: 300; }
+    .acard ul li::before { content:''; width: 4px; height: 4px; border-radius: 50%; background: var(--blue); margin-top: 8px; flex-shrink: 0; }
+    .feat-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .feat-table th { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .6px; padding: 0 0 9px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 500; }
+    .feat-table td { font-size: 12px; color: var(--text2); padding: 8px 0; border-bottom: 1px solid var(--border); vertical-align: top; font-weight: 300; }
+    .feat-table tr:last-child td { border-bottom: none; }
+    .feat-table td:first-child { font-family: monospace; font-size: 11px; color: var(--blue); padding-right: 14px; white-space: nowrap; font-weight: 400; }
+
+    .pg-head { margin-bottom: 22px; }
+    .pg-head h2 { font-family: var(--fh); font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 3px; }
+    .pg-head p  { font-size: 13px; color: var(--text2); font-weight: 300; }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="header">
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+      </div>
+      <span class="brand-name">SalaryIQ</span>
+      <div class="brand-sep"></div>
+      <span class="brand-sub">Data Science Intelligence</span>
+    </div>
+    <div class="live-badge"><div class="dot pulse"></div>Flask API</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('home',this)">
+      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      Home
+    </button>
+    <button class="tab" onclick="switchTab('dashboard',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Dashboard
+    </button>
+    <button class="tab" onclick="switchTab('predictor',this)">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+      Predictor
+    </button>
+    <button class="tab" onclick="switchTab('about',this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+      About
+    </button>
+  </div>
+</div>
+
+<!-- ══ PAGES ══ -->
+<div class="content">
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-eyebrow">
+        <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+        Glassdoor Jobs Dataset
+      </div>
+      <h1>Understand your <em>data science</em> salary</h1>
+      <p>Explore salary trends, analyze market data, and predict your compensation using a trained ML model — all in one place.</p>
+      <div class="hero-btns">
+        <button class="btn-p" onclick="switchTab('predictor', document.querySelectorAll('.tab')[2])">Try Salary Predictor</button>
+        <button class="btn-g" onclick="switchTab('dashboard', document.querySelectorAll('.tab')[1])">View Dashboard</button>
+      </div>
+    </div>
+
+    <div class="home-grid">
+      <div class="hcard">
+        <div class="hcard-icon ic-blue"><svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg></div>
+        <h3>Live Dashboard</h3>
+        <p>Salary breakdowns by role, sector, state, and skills — interactive charts built from real Glassdoor job postings.</p>
+      </div>
+      <div class="hcard">
+        <div class="hcard-icon ic-green"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+        <h3>ML Salary Predictor</h3>
+        <p>Enter your profile — role, seniority, sector, skills, location — and get an instant estimate from a trained regression model.</p>
+      </div>
+      <div class="hcard">
+        <div class="hcard-icon ic-amber"><svg viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg></div>
+        <h3>Market Insights</h3>
+        <p>Discover which skills command the highest premium, which states pay most, and how company size affects compensation.</p>
+      </div>
+    </div>
+
+    <div class="home-stats">
+      <div class="hs"><div class="hs-label">Total Jobs</div><div class="hs-val" id="hStatJobs">—</div><div class="hs-sub">listings analyzed</div></div>
+      <div class="hs"><div class="hs-label">Avg Salary</div><div class="hs-val" id="hStatAvg">—</div><div class="hs-sub">annual USD</div></div>
+      <div class="hs"><div class="hs-label">Median Salary</div><div class="hs-val" id="hStatMed">—</div><div class="hs-sub">annual USD</div></div>
+      <div class="hs"><div class="hs-label">Top Skill</div><div class="hs-val" id="hStatSkill" style="font-size:17px">—</div><div class="hs-sub">most in-demand</div></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page" id="page-dashboard">
+    <div class="pg-head"><h2>Market Overview</h2><p>Aggregated salary data from Glassdoor job postings</p></div>
+    <div class="dash-stats">
+      <div class="stat-card"><div class="sc-lbl">Total Jobs</div><div class="sc-val" id="statJobs">—</div><div class="sc-sub">listings analyzed</div></div>
+      <div class="stat-card"><div class="sc-lbl">Avg Salary</div><div class="sc-val" id="statAvg">—</div><div class="sc-sub">annual USD</div></div>
+      <div class="stat-card"><div class="sc-lbl">Median Salary</div><div class="sc-val" id="statMed">—</div><div class="sc-sub">annual USD</div></div>
+      <div class="stat-card"><div class="sc-lbl">Top Skill</div><div class="sc-val" id="statSkill" style="font-size:18px">—</div><div class="sc-sub">most in-demand</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-card"><h3>Avg salary by role ($K)</h3><div class="chart-wrap"><canvas id="roleChart"></canvas></div></div>
+      <div class="chart-card"><h3>Top sectors by salary ($K)</h3><div class="chart-wrap"><canvas id="sectorChart"></canvas></div></div>
+      <div class="chart-card"><h3>Skills in job postings</h3><div class="chart-wrap"><canvas id="skillChart"></canvas></div></div>
+      <div class="chart-card"><h3>Jobs by state (top 10)</h3><div class="chart-wrap"><canvas id="stateChart"></canvas></div></div>
+    </div>
+  </div>
+
+  <!-- PREDICTOR -->
+  <div class="page" id="page-predictor">
+    <div class="pg-head"><h2>Salary Predictor</h2><p>Fill in your profile to get an ML-powered salary estimate</p></div>
+    <div class="pred-wrap">
+      <div class="pred-banner">
+        <div><h2>Your Salary Profile</h2><p>Adjust the parameters below to match your target role and company</p></div>
+        <div class="model-pill">Random Forest · Glassdoor Dataset</div>
+      </div>
+      <div class="pred-body">
+        <div class="form-grid">
+          <div class="fg"><label>Job Role</label>
+            <select id="job_simp_enc">
+              <option value="2">Data Scientist</option><option value="1">Data Engineer</option>
+              <option value="0">Analyst</option><option value="5">MLE</option>
+              <option value="4">Manager</option><option value="3">Director</option>
+            </select>
+          </div>
+          <div class="fg"><label>Seniority</label>
+            <select id="seniority_enc"><option value="1">Not Specified</option><option value="2">Senior</option><option value="0">Junior</option></select>
+          </div>
+          <div class="fg"><label>Sector</label>
+            <select id="sector_enc">
+              <option value="12">Information Technology</option><option value="4">Biotech &amp; Pharma</option>
+              <option value="5">Business Services</option><option value="13">Insurance</option>
+              <option value="11">Health Care</option><option value="9">Finance</option>
+              <option value="14">Manufacturing</option><option value="1">Aerospace &amp; Defense</option>
+              <option value="8">Education</option><option value="19">Retail</option>
+            </select>
+          </div>
+          <div class="fg"><label>Company Size</label>
+            <select id="size_enc">
+              <option value="4">1001–5000</option><option value="3">501–1000</option>
+              <option value="2">201–500</option><option value="5">5001–10000</option>
+              <option value="6">10000+</option><option value="1">51–200</option><option value="0">1–50</option>
+            </select>
+          </div>
+          <div class="fg"><label>Company Rating</label><input type="number" id="rating" value="3.8" min="1" max="5" step="0.1"/></div>
+          <div class="fg"><label>Company Age (yrs)</label><input type="number" id="age" value="20" min="1" max="200"/></div>
+          <div class="fg"><label>Description Length</label><input type="number" id="desc_len" value="1500" min="100" max="8000"/></div>
+          <div class="fg"><label>Num. Competitors</label><input type="number" id="num_comp" value="0" min="0" max="20"/></div>
+          <div class="fg"><label>Same State as HQ</label>
+            <select id="same_state"><option value="1">Yes</option><option value="0">No</option></select>
+          </div>
+          <div class="fg"><label>Hourly Role</label>
+            <select id="hourly"><option value="0">No</option><option value="1">Yes</option></select>
+          </div>
+          <div class="fg"><label>State</label>
+            <select id="state_enc">
+              <option value="5">CA</option><option value="33">NY</option><option value="37">TX</option>
+              <option value="23">MA</option><option value="22">MD</option><option value="42">VA</option>
+              <option value="26">NJ</option><option value="13">IL</option><option value="43">WA</option><option value="11">GA</option>
+            </select>
+          </div>
+          <div class="skills-section">
+            <div class="skills-lbl">Required Skills</div>
+            <div class="chips">
+              <label class="chip on" id="chip_python"><input type="checkbox" id="python_yn" checked/><div class="cdot"></div>Python</label>
+              <label class="chip" id="chip_r"><input type="checkbox" id="R_yn"/><div class="cdot"></div>R</label>
+              <label class="chip" id="chip_spark"><input type="checkbox" id="spark"/><div class="cdot"></div>Spark</label>
+              <label class="chip" id="chip_aws"><input type="checkbox" id="aws"/><div class="cdot"></div>AWS</label>
+              <label class="chip on" id="chip_excel"><input type="checkbox" id="excel" checked/><div class="cdot"></div>Excel</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pred-footer">
+        <button class="predict-btn" onclick="predict()">
+          <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Predict Salary
+        </button>
+        <div class="loader-txt" id="loader">Calculating…</div>
+        <div class="result-pill" id="resultBanner">
+          <div class="r-lbl">Estimated Annual Salary</div>
+          <div class="r-val" id="resultValue">—</div>
+          <div class="r-sub" id="resultSub">—</div>
+        </div>
+        <div class="err-pill" id="errorBanner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="page" id="page-about">
+    <div class="pg-head"><h2>About This Project</h2><p>Dataset, methodology, and technical details</p></div>
+
+    <div class="about-intro">
+      <h2>Project Overview</h2>
+      <p>SalaryIQ is an end-to-end data science project built on a scraped Glassdoor dataset containing thousands of real job postings for data science roles across the United States.</p>
+      <p>The project covers exploratory data analysis, feature engineering, machine learning model training, and deployment as an interactive web application via Flask.</p>
+      <div class="tech-pills">
+        <span class="tpill">Python</span><span class="tpill">Flask</span><span class="tpill">scikit-learn</span>
+        <span class="tpill">pandas</span><span class="tpill">numpy</span><span class="tpill">joblib</span>
+        <span class="tpill">Chart.js</span><span class="tpill">Random Forest</span><span class="tpill">Glassdoor Dataset</span>
+      </div>
+    </div>
+
+    <div class="about-grid">
+      <div class="acard">
+        <h3><svg viewBox="0 0 24 24" fill="var(--blue)"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.36 0-2.58-2.09-4.64-4.67-4.64-1.37 0-2.61.56-3.5 1.46L9 3.27 7.17 1.46C6.28.56 5.04 0 3.67 0 1.09 0 0 2.06 0 4.64c0 .48.11.92.18 1.36H0v2h20V6zm-8 10H4V8h16v8h-8zm4-4h-2v2h-2v-2H8v-2h2V8h2v2h2v2z"/></svg>Dataset</h3>
+        <ul>
+          <li>Scraped from Glassdoor.com job postings</li>
+          <li>Data science, ML, and analyst roles across the US</li>
+          <li>Includes company metadata, salary estimates, descriptions</li>
+          <li>Pre-processed with feature engineering for ML training</li>
+          <li>Available publicly on Kaggle</li>
+        </ul>
+      </div>
+      <div class="acard">
+        <h3><svg viewBox="0 0 24 24" fill="var(--green)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>ML Model</h3>
+        <ul>
+          <li>Random Forest Regressor via scikit-learn</li>
+          <li>Target: average estimated salary in $K</li>
+          <li>17 engineered features across skills, seniority, sector</li>
+          <li>Label encoding for all categorical variables</li>
+          <li>Serialized with joblib as <code style="color:var(--blue);font-size:10px">salary_model.pkl</code></li>
+        </ul>
+      </div>
+      <div class="acard" style="grid-column:1/-1">
+        <h3><svg viewBox="0 0 24 24" fill="var(--amber)"><path d="M4 6h18V4H4c-1.1 0-2 .9-2 2v11H0v3h14v-3H4V6zm19 2h-6c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h6c.55 0 1-.45 1-1V9c0-.55-.45-1-1-1zm-1 9h-4v-7h4v7z"/></svg>Model Features</h3>
+        <table class="feat-table">
+          <thead><tr><th>Feature</th><th>Description</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td>python_yn / R_yn</td><td>Python or R required in job description</td><td>Binary</td></tr>
+            <tr><td>spark / aws / excel</td><td>Spark, AWS, Excel mentioned in posting</td><td>Binary</td></tr>
+            <tr><td>Rating</td><td>Company Glassdoor rating (1–5 scale)</td><td>Numeric</td></tr>
+            <tr><td>age</td><td>Company age in years</td><td>Numeric</td></tr>
+            <tr><td>desc_len</td><td>Character length of the job description</td><td>Numeric</td></tr>
+            <tr><td>num_comp</td><td>Number of listed competitors</td><td>Numeric</td></tr>
+            <tr><td>same_state</td><td>Job state matches company HQ state</td><td>Binary</td></tr>
+            <tr><td>hourly / employer_provided</td><td>Pay type flags from the listing</td><td>Binary</td></tr>
+            <tr><td>job_simp_enc</td><td>Simplified job title (label encoded)</td><td>Encoded</td></tr>
+            <tr><td>seniority_enc</td><td>Seniority level — junior / na / senior</td><td>Encoded</td></tr>
+            <tr><td>sector_enc / size_enc / state_enc</td><td>Company sector, size, and job state</td><td>Encoded</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Tab switching ──────────────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'dashboard' && !chartsLoaded) loadDashboard();
+}
+
+// ── Skill chips ────────────────────────────────────────────────────────
+['python','r','spark','aws','excel'].forEach(k => {
+  const chip = document.getElementById('chip_' + k);
+  chip.addEventListener('click', e => {
+    e.preventDefault();
+    const cb = chip.querySelector('input');
+    cb.checked = !cb.checked;
+    chip.classList.toggle('on', cb.checked);
+  });
+});
+
+// ── Chart helpers ──────────────────────────────────────────────────────
+const PAL = ['#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316','#84cc16','#ef4444','#a78bfa'];
+const TC = '#475569', GC = 'rgba(255,255,255,.04)';
+let chartsLoaded = false;
+
+function mkBar(id, labels, values, horiz = false) {
+  const ctx = document.getElementById(id); if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ data: values, backgroundColor: PAL, borderRadius: 6, borderSkipped: false }] },
+    options: {
+      indexAxis: horiz ? 'y' : 'x', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: v => `$${Math.round(v.raw)}K` } } },
+      scales: {
+        x: { ticks: { color: TC, font: { size: 10 } }, grid: { color: GC } },
+        y: { ticks: { color: TC, font: { size: 10 } }, grid: { color: GC } }
+      }
+    }
+  });
+}
+
+async function loadDashboard() {
+  try {
+    const d = await fetch('/api/dashboard').then(r => r.json());
+
+    const pairs = [['statJobs','hStatJobs'], ['statAvg','hStatAvg'], ['statMed','hStatMed'], ['statSkill','hStatSkill']];
+    const vals = [
+      d.total_jobs?.toLocaleString() ?? '—',
+      d.avg_salary_mean   ? `$${Math.round(d.avg_salary_mean)}K`   : '—',
+      d.avg_salary_median ? `$${Math.round(d.avg_salary_median)}K` : '—',
+      Object.entries(d.skills ?? {}).sort((a,b)=>b[1]-a[1])[0]?.[0] ?? '—'
+    ];
+    pairs.forEach(([a,b],i) => {
+      [a,b].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = vals[i]; });
+    });
+
+    if (d.salary_by_role)   { const s = Object.entries(d.salary_by_role).sort((a,b)=>b[1]-a[1]); mkBar('roleChart', s.map(x=>x[0]), s.map(x=>+x[1].toFixed(1))); }
+    if (d.salary_by_sector) { const s = Object.entries(d.salary_by_sector).sort((a,b)=>b[1]-a[1]).slice(0,8); mkBar('sectorChart', s.map(x=>x[0]), s.map(x=>+x[1].toFixed(1)), true); }
+    if (d.skills) {
+      new Chart(document.getElementById('skillChart'), {
+        type: 'doughnut',
+        data: { labels: Object.keys(d.skills), datasets: [{ data: Object.values(d.skills), backgroundColor: PAL, borderWidth: 2, borderColor: '#111b2a' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: TC, font: { size: 11 }, boxWidth: 11 } } } }
+      });
+    }
+    if (d.top_states) { const s = Object.entries(d.top_states).sort((a,b)=>b[1]-a[1]).slice(0,10); mkBar('stateChart', s.map(x=>x[0]), s.map(x=>x[1])); }
+    chartsLoaded = true;
+  } catch(e) { console.log('Dashboard API unavailable.'); }
+}
+
+// ── Predictor ──────────────────────────────────────────────────────────
+async function predict() {
+  const B = id => document.getElementById(id);
+  B('resultBanner').style.display = 'none';
+  B('errorBanner').style.display  = 'none';
+  B('loader').style.display = 'block';
+
+  const payload = {
+    python_yn: B('python_yn').checked?1:0, R_yn: B('R_yn').checked?1:0,
+    spark: B('spark').checked?1:0, aws: B('aws').checked?1:0, excel: B('excel').checked?1:0,
+    Rating: parseFloat(B('rating').value), age: parseInt(B('age').value),
+    desc_len: parseInt(B('desc_len').value), num_comp: parseInt(B('num_comp').value),
+    same_state: parseInt(B('same_state').value), hourly: parseInt(B('hourly').value),
+    employer_provided: 0,
+    job_simp_enc: parseInt(B('job_simp_enc').value), seniority_enc: parseInt(B('seniority_enc').value),
+    sector_enc: parseInt(B('sector_enc').value), size_enc: parseInt(B('size_enc').value),
+    state_enc: parseInt(B('state_enc').value)
+  };
+
+  try {
+    const d = await fetch('/api/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) }).then(r=>r.json());
+    B('loader').style.display = 'none';
+    if (d.error) { B('errorBanner').textContent = d.error; B('errorBanner').style.display = 'block'; }
+    else {
+      B('resultValue').textContent = `$${d.predicted_salary_k}K / year`;
+      B('resultSub').textContent   = `≈ $${Math.round(d.predicted_salary_usd/12).toLocaleString()} / month`;
+      B('resultBanner').style.display = 'flex';
+    }
+  } catch(e) {
+    B('loader').style.display = 'none';
+    B('errorBanner').textContent = 'Could not reach the API — make sure Flask is running.';
+    B('errorBanner').style.display = 'block';
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>

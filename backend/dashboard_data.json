@@ -1,0 +1,44 @@
+{
+  "avg_salary_mean": 100.62601078167116,
+  "avg_salary_median": 97.5,
+  "total_jobs": 742,
+  "salary_by_role": {
+    "analyst": 65.9,
+    "data engineer": 105.4,
+    "data scientist": 117.6,
+    "director": 168.6,
+    "manager": 84.0,
+    "mle": 126.4
+  },
+  "salary_by_sector": {
+    "Media": 116.7,
+    "-1": 114.6,
+    "Accounting & Legal": 113.5,
+    "Information Technology": 113.2,
+    "Biotech & Pharmaceuticals": 111.8,
+    "Insurance": 105.9,
+    "Real Estate": 104.8,
+    "Mining & Metals": 104.0,
+    "Telecommunications": 102.3,
+    "Education": 100.7
+  },
+  "skills": {
+    "Python": 392,
+    "R": 2,
+    "Spark": 167,
+    "AWS": 176,
+    "Excel": 388
+  },
+  "top_states": {
+    "CA": 152,
+    "MA": 103,
+    "NY": 72,
+    "VA": 41,
+    "IL": 40,
+    "MD": 35,
+    "PA": 33,
+    "TX": 28,
+    "WA": 21,
+    "NC": 21
+  }
+}
